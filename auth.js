@@ -51,7 +51,10 @@ app.get('/oauth-callback', ({ query: { code } }, res) => {
   axios
     .post('https://api.webflow.com/oauth/access_token', body, opts)
     .then((_res) => _res.data.access_token)
-    .then(token => { res.redirect(`/?token=${token}`); })
+    .then(token => 
+        
+      { res.redirect(`/?token=${token}`); 
+    })
     .catch(err => {
       res.status(500).json({ err: err.message });
     });
@@ -62,3 +65,7 @@ server.listen(5500);
 // eslint-disable-next-line no-console
 console.log('App listening on port 5500');
 
+/*
+Wait, what state param?
+After you've gotten the access token - you now need to ID whether or not the Webflow user has an account with your service
+*/
