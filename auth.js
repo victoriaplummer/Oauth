@@ -13,7 +13,6 @@ const express = require('express'); // to create our server
 const key = fs.readFileSync('./certs/key.pem'); // Get Key
 const cert = fs.readFileSync('./certs/cert.pem'); // Get Certificate
 const https = require('https');
-const { builtinModules } = require('module');
 
 const app = express(); // create the express app
 const server = https.createServer({ key: key, cert: cert }, app); // create secure server
@@ -33,27 +32,28 @@ app.get('/auth', (req, res) => {
 });
 
 // If we recieve a get request to /oauth-callback then the server will make a POST request to webflow for an Authorization Code
-
+let myToken
 app.get('/oauth-callback', ({ query: { code } }, res) => {
 
   // Body of POST Request
   const body = {
     client_id: process.env.WEBFLOW_CLIENT_ID,
     client_secret: process.env.WEBFLOW_CLIENT_SECRET,
-    code: authorizationCode,
+    code: code,
     grant_type: 'authorization_code'
   };
 
   // Define request options
   const opts = { headers: { accept: 'application/json' } };
 
-  // Make Call
+  // Make call to get access token
   axios
     .post('https://api.webflow.com/oauth/access_token', body, opts)
     .then((_res) => _res.data.access_token)
-    .then(token => 
-        
-      { res.redirect(`/?token=${token}`); 
+    .then(token => { 
+      console.log({myToken: token})
+      // At this point, you would securely store this token to use within your app.
+      res.redirect(`/?token=${token}`); 
     })
     .catch(err => {
       res.status(500).json({ err: err.message });
@@ -64,8 +64,3 @@ app.get('/oauth-callback', ({ query: { code } }, res) => {
 server.listen(5500);
 // eslint-disable-next-line no-console
 console.log('App listening on port 5500');
-
-/*
-Wait, what state param?
-After you've gotten the access token - you now need to ID whether or not the Webflow user has an account with your service
-*/
